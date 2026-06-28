@@ -1,7 +1,7 @@
 {
   "name": "engine-installer",
   "version": "0.0.1",
-  "description": "",
+  "description": "Modern JS engine installer",
   "keywords": [],
   "homepage": "",
   "license": "MIT",
