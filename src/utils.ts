@@ -3,14 +3,21 @@ import { join, relative } from "node:path";
 
 export interface Config {
   /**
-   * Default OS
+   * Default OS.
    */
   os?: OS;
 
   /**
-   * Default arch
+   * Default arch.
    */
   arch?: Arch;
+
+  /**
+   * Directory path to install engines, relative to this config file.
+   *
+   * Defaults to `.egist`.
+   */
+  dir: string;
 
   /**
    * Installed engine binaries.
