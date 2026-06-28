@@ -1,6 +1,23 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
+export interface Config {
+  /**
+   * Default OS
+   */
+  os?: OS;
+
+  /**
+   * Default arch
+   */
+  arch?: Arch;
+
+  /**
+   * Installed engine binaries.
+   */
+  engines: Record<string, Record<string, string>>;
+}
+
 const ARCH = ['x64', 'x86', 'arm64', 'arm'] as const;
 export type Arch = typeof ARCH[number];
 
