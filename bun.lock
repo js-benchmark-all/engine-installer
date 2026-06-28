@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "example",
+      "dependencies": {
+        "fflate": "^0.8.3",
+      },
       "devDependencies": {
         "@swc/core": "^1.15.43",
         "@types/bun": "^1.3.14",
@@ -149,6 +152,8 @@
     "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
     "chokidar": ["chokidar@5.0.0", "", { "dependencies": { "readdirp": "^5.0.0" } }, "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="],
+
+    "fflate": ["fflate@0.8.3", "", {}, "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA=="],
 
     "measure-loop": ["measure-loop@0.4.0", "", { "dependencies": { "runtime-compiler": "4.2.2" } }, "sha512-K06ExJhhpc4WNJiaAobqUSqzW93pXixDlDGMvSAezwAzDNpvrIamMTxmeCcePQ9U/edAfBIE0xbZsbdKLM+Nnw=="],
 

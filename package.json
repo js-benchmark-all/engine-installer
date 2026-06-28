@@ -1,11 +1,12 @@
 {
-  "name": "engine-installer",
+  "name": "egisl",
   "version": "0.0.1",
   "description": "Modern JS engine installer",
   "keywords": [],
   "homepage": "",
+ 	"bin": "cli.js",
   "license": "MIT",
-  "repository": "",
+  "repository": "js-benchmark-all/engine-installer",
   "type": "module",
   "scripts": {
     "task": "bun scripts/task.ts",
@@ -27,5 +28,8 @@
   },
   "trustedDependencies": [
     "@swc/core"
-  ]
+  ],
+  "dependencies": {
+    "fflate": "^0.8.3"
+  }
 }
