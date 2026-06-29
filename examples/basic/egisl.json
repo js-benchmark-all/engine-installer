@@ -1,0 +1,15 @@
+{
+  "dir": ".egisl",
+  "engines": {
+    "quickjs@latest": {
+      "bin": {
+        "qjs": ".egisl/quickjs/latest"
+      }
+    },
+    "llrt@latest": {
+      "bin": {
+        "llrt": ".egisl/llrt/latest"
+      }
+    }
+  }
+}

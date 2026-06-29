@@ -4,7 +4,7 @@
   "description": "Modern JS engine installer",
   "keywords": [],
   "homepage": "",
- 	"bin": "cli.js",
+ 	"bin": "cli/index.js",
   "license": "MIT",
   "repository": "js-benchmark-all/engine-installer",
   "type": "module",

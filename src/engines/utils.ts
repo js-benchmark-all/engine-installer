@@ -1,37 +1,13 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join, relative } from "node:path";
-
-export interface Config {
-  /**
-   * Default OS.
-   */
-  os?: OS;
-
-  /**
-   * Default arch.
-   */
-  arch?: Arch;
-
-  /**
-   * Directory path to install engines, relative to this config file.
-   *
-   * Defaults to `.egist`.
-   */
-  dir: string;
-
-  /**
-   * Installed engine binaries.
-   */
-  engines: Record<string, Record<string, string>>;
-}
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 
 const ARCH = ['x64', 'x86', 'arm64', 'arm'] as const;
-export type Arch = typeof ARCH[number];
+export type Arch = (typeof ARCH)[number];
 
-const OS = ['linux', 'win', 'mac'] as const;
-export type OS = typeof OS[number];
+const OS = ['linux', 'win32', 'darwin'] as const;
+export type OS = (typeof OS)[number];
 
-export type Installer = (id: string, dest: string, version: string, arch: Arch, os: OS) => Promise<Record<string, string>>;
+export const ENGINE = ['llrt', 'quickjs'] as const;
 
 export const formatBytes = (size: number): string => {
   let unit = 'b';
@@ -47,24 +23,36 @@ export const formatBytes = (size: number): string => {
 
 export const unsupportedTarget = (arch: Arch, os: OS, additionalMsg: string): never => {
   throw new Error(`installer does not support ${os}-${arch} (${additionalMsg})`);
-}
+};
 
 export const createDir = async (logGroup: string, dest: string, id: string): Promise<string> => {
   dest = join(dest, id);
   console.info(logGroup, 'creating', relative('.', dest));
   await mkdir(dest, { recursive: true });
   return dest;
-}
+};
 
-export const saveBinary = async (logGroup: string, os: OS, dest: string, id: string, binary: Parameters<typeof writeFile>[1]): Promise<string> => {
-  dest = join(dest, os === 'win' ? id + '.exe' : id);
+export const saveBinary = async (
+  logGroup: string,
+  os: OS,
+  dest: string,
+  id: string,
+  binary: Parameters<typeof writeFile>[1],
+): Promise<string> => {
+  dest = join(dest, os === 'win32' ? id + '.exe' : id);
   console.info(logGroup, 'saving to', relative('.', dest));
   await writeFile(dest, binary);
   return dest;
-}
+};
 
-export const useBinary = async (logGroup: string, os: OS, dest: string, id: string, binPath: string): Promise<string> => {
-  if (os === 'win') {
+export const useBinary = async (
+  logGroup: string,
+  os: OS,
+  dest: string,
+  id: string,
+  binPath: string,
+): Promise<string> => {
+  if (os === 'win32') {
     dest = join(dest, id + '.cmd');
     console.info(logGroup, 'saving script to', relative('.', dest));
     await writeFile(dest, `@echo off\n"${binPath}" %*`);
@@ -74,16 +62,14 @@ export const useBinary = async (logGroup: string, os: OS, dest: string, id: stri
     await writeFile(dest, `#!/usr/bin/env bash\n"${binPath}" "$@"`);
   }
   return dest;
-}
+};
 
 export const assertOS = (v: string): OS => {
   if (OS.includes(v as any)) return v as any;
   throw new Error(`expected: ${OS.join(', ')}. recieved: ${v}.`);
-}
+};
 
 export const assertArch = (v: string): Arch => {
   if (ARCH.includes(v as any)) return v as any;
   throw new Error(`expected: ${ARCH.join(', ')}. recieved: ${v}.`);
-}
-
-// parse engine@version_arch_os
+};

@@ -1,7 +1,7 @@
 Modern JS engine installer (WIP).
 ```sh
 # create config file at ./egist.json if not exists, else install all engines in config file
-egist init
+egisl init
 
 # latest v8
 egisl add v8
@@ -19,8 +19,8 @@ egisl add llrt@v0.8.1-beta_x64_linux
 egisl add v8 quickjs llrt jsc hermes spidermonkey xs
 
 # remove engines, similar arguments to egist add
-egisl remove ...
+egisl rm ...
 
 # alias binaries, similar arguments to egist add
-egist use ...
+egisl use ...
 ```
