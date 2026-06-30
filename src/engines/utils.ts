@@ -32,18 +32,12 @@ export const createDir = async (logGroup: string, dest: string, id: string): Pro
   return dest;
 };
 
-export const saveBinary = async (
-  logGroup: string,
-  os: OS,
-  dest: string,
-  id: string,
-  binary: Parameters<typeof writeFile>[1],
-): Promise<string> => {
-  dest = join(dest, os === 'win32' ? id + '.exe' : id);
-  console.info(logGroup, 'saving to', relative('.', dest));
-  await writeFile(dest, binary);
-  return dest;
-};
+export const binaryPath = (os: OS, dest: string, id: string): string => join(dest, os === 'win32' ? id + '.exe' : id);
+
+export const saveBinary = (logGroup: string, binName: string, dest: string, binary: Uint8Array<ArrayBuffer>): Promise<void> => {
+  console.info(logGroup, 'saving', binName, '(' + formatBytes(binary.byteLength) + ')', 'to', relative('.', dest));
+  return writeFile(dest, binary);
+}
 
 export const useBinary = async (
   logGroup: string,

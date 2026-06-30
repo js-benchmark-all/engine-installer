@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { closeConfig, readConfig, rmPath } from './config.ts';
 import { install } from './install.ts';
-import { parse } from './name.ts';
 
 const { argv } = process;
 
@@ -40,28 +39,6 @@ if (argv.length < 3 || argv[2] === 'help') {
 
   const promises = [];
   for (let i = 3; i < argv.length; i++) promises.push(install(argv[i], data));
-  await Promise.all(promises);
-
-  await closeConfig(config);
-} else if (argv[2] === 'rm') {
-  const config = await readConfig('./egisl.json'),
-    { data } = config;
-
-  const promises = [];
-  for (let i = 3; i < argv.length; i++) {
-    const { id } = parse(argv[i]);
-
-    for (
-      let i = 0, binaries = Object.values(data.engines[id].bin), logGroup = '[' + id + ']';
-      i < binaries.length;
-      i++
-    ) {
-      promises.push(rmPath(logGroup, binaries[i]));
-    }
-
-    // @ts-ignore
-    data.engines[id] = undefined;
-  }
   await Promise.all(promises);
 
   await closeConfig(config);

@@ -1,7 +1,9 @@
-import type { Installer } from '../cli/install.ts';
+import { existsSync } from 'fs';
+import type { Installer, Resolver } from '../cli/install.ts';
 import {
   assertArch,
   assertOS,
+  binaryPath,
   createDir,
   formatBytes,
   saveBinary,
@@ -26,25 +28,37 @@ export const getLink = (releaseDate: string, arch: Arch, os: OS): string => {
 export const getBinary = async (zipLink: string): Promise<Unzipped[string]> =>
   unzipSync(await (await fetch(zipLink)).bytes()).qjs;
 
-export const getLatestVersion = async (): Promise<string> =>
-  (await (await fetch('https://bellard.org/quickjs/binary_releases/LATEST.json')).json()).version;
+export const resolve: Resolver = async (id: string) => {
+  let parts = id.split('_', 3),
+    version: string = parts[0] === 'latest'
+      ? (await (await fetch('https://bellard.org/quickjs/binary_releases/LATEST.json')).json()).version
+      : parts[0],
+    os = assertOS(parts.length < 2 ? process.platform : parts[1]),
+    arch = assertArch(parts.length < 3 ? process.arch : parts[2]);
 
-// parse version_arch_os
-export const install: Installer = async (logGroup, id, dest) => {
-  dest = await createDir(logGroup, dest, 'quickjs');
+  return {
+    id: `${version}_${os}_${arch}`,
+    version,
+    os,
+    arch
+  };
+}
 
-  const parts = id.split('_', 3),
-    version =
-      id === 'latest'
-        ? (console.info(logGroup, 'getting latest version info'), await getLatestVersion())
-        : parts[0],
-    arch = assertArch(parts.length < 2 ? process.arch : parts[1]),
-    os = assertOS(parts.length < 3 ? process.platform : parts[2]);
+export const install: Installer = async (logGroup, resolved, dest, old) => {
+  dest = binaryPath(resolved.os, await createDir(logGroup, dest, 'quickjs'), resolved.id);
 
-  const link = getLink(version, arch, os);
+  if (old && existsSync(dest)) {
+    console.info(logGroup, 'already installed');
+    return old;
+  }
+
+  const link = getLink(resolved.version, resolved.arch, resolved.os);
   console.info(logGroup, 'fetching', link);
-  const binary = await getBinary(link);
-  console.log(logGroup, 'binary size:', formatBytes(binary.byteLength));
+  await saveBinary(logGroup, resolved.id, dest, await getBinary(link));
 
-  return { bin: { qjs: await saveBinary(logGroup, os, dest, id, binary) } };
+  return {
+    bin: {
+      quickjs: dest
+    }
+  };
 };
