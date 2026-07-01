@@ -1,12 +1,13 @@
 import { existsSync } from 'node:fs';
+import { relative } from 'node:path';
+
 import type { Installer, Resolver } from '../cli/install.ts';
 import {
   assertArch,
   assertOS,
-  binaryPath,
   createDir,
-  saveBinary,
   unsupportedTarget,
+  writeTo,
   type Arch,
   type OS,
 } from './utils.ts';
@@ -18,7 +19,7 @@ export const getLink = (releaseTag: string, arch: Arch, os: OS): string => {
     unsupportedTarget(
       arch,
       os,
-      'llrt supports linux-x64, linux-arm64, mac-x64, mac-arm64, win-x64, win-arm64',
+      'llrt supports linux_x64, linux_arm64, mac_x64, mac_arm64, win32_x64, win32_arm64',
     );
   if (os === 'win32') os = 'windows' as any;
   return `https://github.com/awslabs/llrt/releases/download/${releaseTag}/llrt-${os}-${arch}.zip`;
@@ -43,26 +44,25 @@ export const resolve: Resolver = async (id: string) => {
 };
 
 // parse version_arch_os
-export const install: Installer = async (logGroup, resolved, dest, old) => {
-  dest = binaryPath(resolved.os, await createDir(logGroup, dest, 'llrt'), resolved.id);
-
-  if (old && existsSync(dest)) {
-    console.info(logGroup, 'already installed');
-    return old;
-  }
+export const install: Installer = async (logGroup, resolved, dest) => {
+  dest = await createDir(logGroup, dest, 'llrt/' + resolved.id);
 
   const link = getLink(resolved.version, resolved.arch, resolved.os);
   console.info(logGroup, 'fetching', link);
-  await saveBinary(
-    logGroup,
-    resolved.id,
-    dest,
-    Object.values(unzipSync(await (await fetch(link)).bytes()))[0],
-  );
 
+  const bytes = await (await fetch(link)).bytes();
+  console.info(logGroup, 'unzipping to', relative('.', dest));
+  const files = unzipSync(bytes);
+
+  if (resolved.os === 'win32') {
+    await writeTo(logGroup, dest + '\\llrt.exe', files, 'llrt.exe');
+    return {
+      bin: { 'llrt.exe': 'llrt.exe' },
+    };
+  }
+
+  await writeTo(logGroup, dest + '/llrt', files, 'llrt');
   return {
-    bin: {
-      llrt: dest,
-    },
+    bin: { llrt: 'llrt' },
   };
 };

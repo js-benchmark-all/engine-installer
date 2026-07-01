@@ -1,18 +1,19 @@
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
+import { relative } from 'node:path';
+
 import type { Installer, Resolver } from '../cli/install.ts';
 import {
   assertArch,
   assertOS,
-  binaryPath,
   createDir,
-  saveBinary,
   unsupportedTarget,
+  writeTo,
   type Arch,
   type OS,
 } from './utils.ts';
 import { unzipSync } from 'fflate/node';
 
-const additionalMsg = 'quickjs supports linux-x64, linux-x86, win-x64, win-x86';
+const additionalMsg = 'quickjs supports linux_x64, linux_x86, win32_x64, win32_x86';
 
 export const getLink = (releaseDate: string, arch: Arch, os: OS): string => {
   if (os === 'win32') os = 'win' as any;
@@ -43,21 +44,33 @@ export const resolve: Resolver = async (id: string) => {
   };
 };
 
-export const install: Installer = async (logGroup, resolved, dest, old) => {
-  dest = binaryPath(resolved.os, await createDir(logGroup, dest, 'quickjs'), resolved.id);
-
-  if (old && existsSync(dest)) {
-    console.info(logGroup, 'already installed');
-    return old;
-  }
+export const install: Installer = async (logGroup, resolved, dest) => {
+  dest = await createDir(logGroup, dest, 'quickjs/' + resolved.id);
 
   const link = getLink(resolved.version, resolved.arch, resolved.os);
   console.info(logGroup, 'fetching', link);
-  await saveBinary(logGroup, resolved.id, dest, unzipSync(await (await fetch(link)).bytes()).qjs);
+
+  const bytes = await (await fetch(link)).bytes();
+  console.info(logGroup, 'unzipping to', relative('.', dest));
+  const files = unzipSync(bytes);
+
+  if (resolved.os === 'win32') {
+    await Promise.all([
+      writeTo(logGroup, dest + '\\qjs.exe', files, 'qjs.exe'),
+      writeTo(logGroup, dest + '\\libwinpthread-1.dll', files, 'libwinpthread-1.dll'),
+    ]);
+
+    return {
+      bin: { 'qjs.exe': 'qjs.exe' },
+    };
+  }
+
+  await Promise.all([
+    writeTo(logGroup, dest + '/qjs', files, 'qjs'),
+    writeTo(logGroup, dest + '/run-test262', files, 'run-test262'),
+  ]);
 
   return {
-    bin: {
-      quickjs: dest,
-    },
+    bin: { quickjs: 'qjs', 'quickjs-run-test262': 'run_test262' },
   };
 };

@@ -2,7 +2,9 @@ import { relative } from 'node:path';
 import type { Arch, OS } from '../engines/utils.ts';
 import { constants, open, rm, type FileHandle } from 'node:fs/promises';
 
-export interface Engine {
+export type InstalledEngines = Record<string, InstalledEngine>;
+
+export interface InstalledEngine {
   bin: Record<string, string>;
 }
 
@@ -27,7 +29,7 @@ export interface Config {
   /**
    * Installed engine binaries.
    */
-  engines: Record<string, Engine>;
+  engines: Record<string, InstalledEngines>;
 }
 
 export const rmPath = async (logGroup: string, path: string): Promise<void> => {

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { closeConfig, readConfig, rmPath } from './config.ts';
+import { closeConfig, readConfig } from './config.ts';
 import { install } from './install.ts';
 
 const { argv } = process;

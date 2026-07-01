@@ -1,5 +1,5 @@
 import type { Arch, OS } from '../engines/utils.ts';
-import type { Config, Engine } from './config.ts';
+import type { Config, InstalledEngine } from './config.ts';
 
 export interface ResolvedId {
   id: string;
@@ -12,8 +12,7 @@ export type Installer = (
   logGroup: string,
   resolved: ResolvedId,
   dest: string,
-  old: Engine | undefined,
-) => Promise<Engine>;
+) => Promise<InstalledEngine>;
 
 export const runInstall = async (
   engine: string,
@@ -27,16 +26,14 @@ export const runInstall = async (
     console.info(logGroup, 'resolving', version);
     const resolved = await o.resolve(version),
       { id } = resolved;
-    console.info(logGroup, 'resolved', version, '->', id);
+    version === id || console.info(logGroup, 'resolved', version, '->', id);
 
-    engine += '@' + id;
-    logGroup = `[${engine}]`;
-    config.engines[engine] = await o.install(
-      logGroup,
-      resolved,
-      config.dir,
-      config.engines[engine],
-    );
+    logGroup = `[${engine}@${id}]`;
+
+    const old = config.engines[engine]?.[id];
+    if (old) console.info(logGroup, 'already installed');
+    else (config.engines[engine] ??= {})[id] = await o.install(logGroup, resolved, config.dir);
+
     console.info(logGroup, 'done :>');
   } catch (e) {
     console.error(logGroup, 'error:', e);

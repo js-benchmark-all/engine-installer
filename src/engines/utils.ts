@@ -1,3 +1,4 @@
+import type { Unzipped } from 'fflate/node';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -32,24 +33,21 @@ export const createDir = async (logGroup: string, dest: string, id: string): Pro
   return dest;
 };
 
-export const binaryPath = (os: OS, dest: string, id: string): string =>
-  join(dest, os === 'win32' ? id + '.exe' : id);
-
-export const saveBinary = (
+export const writeTo = (
   logGroup: string,
-  binName: string,
   dest: string,
-  binary: Uint8Array<ArrayBuffer>,
+  zip: Unzipped,
+  key: string,
 ): Promise<void> => {
   console.info(
     logGroup,
-    'saving binary',
-    binName,
-    '(' + formatBytes(binary.byteLength) + ')',
+    'writing',
+    key,
+    '(' + formatBytes(zip[key].byteLength) + ')',
     'to',
     relative('.', dest),
   );
-  return writeFile(dest, binary);
+  return writeFile(dest, zip[key]);
 };
 
 export const useBinary = async (
