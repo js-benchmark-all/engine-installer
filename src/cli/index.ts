@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { closeConfig, readConfig } from './config.ts';
-import { install } from './install.ts';
+import { install, load } from './install.ts';
 
 const { argv } = process;
 
@@ -24,22 +24,29 @@ if (argv.length < 3 || argv[2] === 'help') {
   else if (argv[3] === 'add') console.log(add_help);
   else if (argv[3] === 'remove') console.log(remove_help);
   else throw new Error(`unknown command: ${argv[3]}\n to list commands: egisl help`);
-} else if (argv[2] === 'init') {
-  const config = await readConfig('./egisl.json'),
-    { data } = config;
+} else
+  (async () => {
+    const config = await readConfig('./egisl.json'),
+      { data } = config;
 
-  const promises = [];
-  for (const runtime in data.engines) promises.push(install(runtime, data));
-  await Promise.all(promises);
+    if (argv[2] === 'init') {
+      const promises = [];
+      for (const runtime in data.engines) promises.push(install(runtime, data));
+      await Promise.all(promises);
+    } else if (argv[2] === 'add') {
+      const promises = [];
+      for (let i = 3; i < argv.length; i++) promises.push(install(argv[i], data));
+      await Promise.all(promises);
+    } else if (argv[2] === 'use') {
+      const promises = [];
+      for (let i = 3; i < argv.length; i++) promises.push(load(argv[i], data));
+      await Promise.all(promises);
+    } else if (argv[2] === 'use-all') {
+      const promises = [];
+      for (let i = 0, keys = Object.keys(data.engines); i < keys.length; i++)
+        promises.push(load(keys[i], data));
+      await Promise.all(promises);
+    }
 
-  await closeConfig(config);
-} else if (argv[2] === 'add') {
-  const config = await readConfig('./egisl.json'),
-    { data } = config;
-
-  const promises = [];
-  for (let i = 3; i < argv.length; i++) promises.push(install(argv[i], data));
-  await Promise.all(promises);
-
-  await closeConfig(config);
-}
+    await closeConfig(config);
+  })();

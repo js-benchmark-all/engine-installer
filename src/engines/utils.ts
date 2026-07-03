@@ -1,14 +1,12 @@
 import type { Unzipped } from 'fflate/node';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { symlink, writeFile } from 'node:fs/promises';
+import { relative } from 'node:path';
 
 const ARCH = ['x64', 'x86', 'arm64', 'arm'] as const;
 export type Arch = (typeof ARCH)[number];
 
 const OS = ['linux', 'win32', 'darwin'] as const;
 export type OS = (typeof OS)[number];
-
-export const ENGINE = ['llrt', 'quickjs'] as const;
 
 export const formatBytes = (size: number): string => {
   let unit = 'b';
@@ -26,14 +24,7 @@ export const unsupportedTarget = (arch: Arch, os: OS, additionalMsg: string): ne
   throw new Error(`installer does not support ${os}-${arch} (${additionalMsg})`);
 };
 
-export const createDir = async (logGroup: string, dest: string, id: string): Promise<string> => {
-  dest = join(dest, id);
-  console.info(logGroup, 'creating', relative('.', dest));
-  await mkdir(dest, { recursive: true });
-  return dest;
-};
-
-export const writeTo = (
+export const writeUzippedTo = (
   logGroup: string,
   dest: string,
   zip: Unzipped,
@@ -50,23 +41,9 @@ export const writeTo = (
   return writeFile(dest, zip[key]);
 };
 
-export const useBinary = async (
-  logGroup: string,
-  os: OS,
-  dest: string,
-  id: string,
-  binPath: string,
-): Promise<string> => {
-  if (os === 'win32') {
-    dest = join(dest, id + '.cmd');
-    console.info(logGroup, 'saving script to', relative('.', dest));
-    await writeFile(dest, `@echo off\n"${binPath}" %*`);
-  } else {
-    dest = join(dest, id);
-    console.info(logGroup, 'saving script to', relative('.', dest));
-    await writeFile(dest, `#!/usr/bin/env bash\n"${binPath}" "$@"`);
-  }
-  return dest;
+export const symlinkTo = (logGroup: string, dest: string, installedDir: string): Promise<void> => {
+  console.info(logGroup, 'symlink', relative('.', installedDir), 'to', relative('.', dest));
+  return symlink(dest, installedDir);
 };
 
 export const assertOS = (v: string): OS => {

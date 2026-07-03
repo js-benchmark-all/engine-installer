@@ -1,8 +1,10 @@
+import { join, relative, sep } from 'node:path';
+import { mkdir, symlink } from 'node:fs/promises';
+
 import type { Arch, OS } from '../engines/utils.ts';
-import type { Config, InstalledEngine } from './config.ts';
+import type { Config, InstalledEngine, InstalledEngines } from './config.ts';
 
 export interface ResolvedId {
-  id: string;
   version: string;
   arch: Arch;
   os: OS;
@@ -13,6 +15,33 @@ export type Installer = (
   resolved: ResolvedId,
   dest: string,
 ) => Promise<InstalledEngine>;
+
+export const load = async (name: string, config: Config): Promise<any> => {
+  const engine = config.engines[name];
+  if (engine == null) {
+    console.error('engine', name, 'does not exist!');
+    return;
+  }
+
+  const logGroup = `[${name}]`,
+    { bin } = engine;
+
+  try {
+    const promises: Promise<void>[] = [];
+
+    for (let key in bin) {
+      const binPath = join(config.dir, key),
+        enginePath = join(config.dir, name + sep + bin[key]);
+
+      console.info(logGroup, 'symlink', relative('.', enginePath), 'to', relative('.', binPath));
+      promises.push(symlink(enginePath, binPath));
+    }
+
+    await Promise.all(promises);
+  } catch (e) {
+    console.error(logGroup, 'load error:', e);
+  }
+};
 
 export const runInstall = async (
   engine: string,
@@ -25,18 +54,21 @@ export const runInstall = async (
   try {
     console.info(logGroup, 'resolving', version);
     const resolved = await o.resolve(version),
-      { id } = resolved;
-    version === id || console.info(logGroup, 'resolved', version, '->', id);
+      id = resolved.version + `_${resolved.os}_` + resolved.arch;
+    console.info(logGroup, 'resolved', version, '->', id);
 
-    logGroup = `[${engine}@${id}]`;
+    engine += '@' + id;
+    logGroup = `[${engine}]`;
 
-    const old = config.engines[engine]?.[id];
-    if (old) console.info(logGroup, 'already installed');
-    else (config.engines[engine] ??= {})[id] = await o.install(logGroup, resolved, config.dir);
+    const dest = join(config.dir, engine);
+    if (await mkdir(dest, { recursive: true })) {
+      console.info(logGroup, 'installing');
+      config.engines[engine] = await o.install(logGroup, resolved, dest);
+    } else console.info(logGroup, 'already installed');
 
     console.info(logGroup, 'done :>');
   } catch (e) {
-    console.error(logGroup, 'error:', e);
+    console.error(logGroup, 'install error:', e);
   }
 };
 

@@ -1,13 +1,11 @@
-import { existsSync } from 'node:fs';
 import { relative } from 'node:path';
 
 import type { Installer, Resolver } from '../cli/install.ts';
 import {
   assertArch,
   assertOS,
-  createDir,
   unsupportedTarget,
-  writeTo,
+  writeUzippedTo,
   type Arch,
   type OS,
 } from './utils.ts';
@@ -45,8 +43,6 @@ export const resolve: Resolver = async (id: string) => {
 };
 
 export const install: Installer = async (logGroup, resolved, dest) => {
-  dest = await createDir(logGroup, dest, 'quickjs/' + resolved.id);
-
   const link = getLink(resolved.version, resolved.arch, resolved.os);
   console.info(logGroup, 'fetching', link);
 
@@ -56,18 +52,18 @@ export const install: Installer = async (logGroup, resolved, dest) => {
 
   if (resolved.os === 'win32') {
     await Promise.all([
-      writeTo(logGroup, dest + '\\qjs.exe', files, 'qjs.exe'),
-      writeTo(logGroup, dest + '\\libwinpthread-1.dll', files, 'libwinpthread-1.dll'),
+      writeUzippedTo(logGroup, dest + '\\qjs.exe', files, 'qjs.exe'),
+      writeUzippedTo(logGroup, dest + '\\libwinpthread-1.dll', files, 'libwinpthread-1.dll'),
     ]);
 
     return {
-      bin: { 'qjs.exe': 'qjs.exe' },
+      bin: { 'quickjs.exe': 'qjs.exe' },
     };
   }
 
   await Promise.all([
-    writeTo(logGroup, dest + '/qjs', files, 'qjs'),
-    writeTo(logGroup, dest + '/run-test262', files, 'run-test262'),
+    writeUzippedTo(logGroup, dest + '/qjs', files, 'qjs'),
+    writeUzippedTo(logGroup, dest + '/run-test262', files, 'run-test262'),
   ]);
 
   return {

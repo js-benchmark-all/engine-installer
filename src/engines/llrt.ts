@@ -1,13 +1,11 @@
-import { existsSync } from 'node:fs';
 import { relative } from 'node:path';
 
 import type { Installer, Resolver } from '../cli/install.ts';
 import {
   assertArch,
   assertOS,
-  createDir,
   unsupportedTarget,
-  writeTo,
+  writeUzippedTo,
   type Arch,
   type OS,
 } from './utils.ts';
@@ -45,8 +43,6 @@ export const resolve: Resolver = async (id: string) => {
 
 // parse version_arch_os
 export const install: Installer = async (logGroup, resolved, dest) => {
-  dest = await createDir(logGroup, dest, 'llrt/' + resolved.id);
-
   const link = getLink(resolved.version, resolved.arch, resolved.os);
   console.info(logGroup, 'fetching', link);
 
@@ -55,13 +51,13 @@ export const install: Installer = async (logGroup, resolved, dest) => {
   const files = unzipSync(bytes);
 
   if (resolved.os === 'win32') {
-    await writeTo(logGroup, dest + '\\llrt.exe', files, 'llrt.exe');
+    await writeUzippedTo(logGroup, dest + '\\llrt.exe', files, 'llrt.exe');
     return {
       bin: { 'llrt.exe': 'llrt.exe' },
     };
   }
 
-  await writeTo(logGroup, dest + '/llrt', files, 'llrt');
+  await writeUzippedTo(logGroup, dest + '/llrt', files, 'llrt');
   return {
     bin: { llrt: 'llrt' },
   };

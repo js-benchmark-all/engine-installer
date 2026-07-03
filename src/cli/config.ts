@@ -29,7 +29,7 @@ export interface Config {
   /**
    * Installed engine binaries.
    */
-  engines: Record<string, InstalledEngines>;
+  engines: InstalledEngines;
 }
 
 export const rmPath = async (logGroup: string, path: string): Promise<void> => {
