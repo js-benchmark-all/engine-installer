@@ -1,4 +1,5 @@
-import type { Unzipped } from 'fflate/node';
+import { type Unzipped, unzip } from 'fflate/node';
+
 import { symlink, writeFile } from 'node:fs/promises';
 import { relative } from 'node:path';
 
@@ -18,6 +19,16 @@ export const formatBytes = (size: number): string => {
     unit = 'kb';
   }
   return Math.round(size * 100) / 100 + unit;
+};
+
+const cb = function (this: PromiseWithResolvers<any>, err: any, data: any) {
+  err === null ? this.resolve(data) : this.reject(err);
+};
+
+export const unzipAsync = (data: Parameters<typeof unzip>[0]): Promise<Unzipped> => {
+  const resolver = Promise.withResolvers<Unzipped>();
+  unzip(data, cb.bind(resolver));
+  return resolver.promise;
 };
 
 export const unsupportedTarget = (arch: Arch, os: OS, additionalMsg: string): never => {

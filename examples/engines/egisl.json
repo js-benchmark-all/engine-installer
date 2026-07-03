@@ -1,15 +1,17 @@
 {
   "dir": ".egisl",
+  "os": "linux",
+  "arch": "x64",
   "engines": {
-    "llrt@v0.8.1-beta_linux_x64": {
-      "bin": {
-        "llrt": "llrt"
-      }
-    },
     "quickjs@2026-06-04_linux_x64": {
       "bin": {
         "quickjs": "qjs",
         "quickjs-run-test262": "run_test262"
+      }
+    },
+    "llrt@v0.8.1-beta_linux_x64": {
+      "bin": {
+        "llrt": "llrt"
       }
     }
   }

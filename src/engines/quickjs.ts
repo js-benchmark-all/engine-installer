@@ -5,11 +5,11 @@ import {
   assertArch,
   assertOS,
   unsupportedTarget,
+  unzipAsync,
   writeUzippedTo,
   type Arch,
   type OS,
 } from './utils.ts';
-import { unzipSync } from 'fflate/node';
 
 const additionalMsg = 'quickjs supports linux_x64, linux_x86, win32_x64, win32_x86';
 
@@ -24,15 +24,15 @@ export const getLink = (releaseDate: string, arch: Arch, os: OS): string => {
   return `https://bellard.org/quickjs/binary_releases/quickjs-${os}-${arch}-${releaseDate}.zip`;
 };
 
-export const resolve: Resolver = async (id: string) => {
+export const resolve: Resolver = async (id, config) => {
   let parts = id.split('_', 3),
     version: string =
       parts[0] === 'latest'
         ? (await (await fetch('https://bellard.org/quickjs/binary_releases/LATEST.json')).json())
             .version
         : parts[0],
-    os = assertOS(parts.length < 2 ? process.platform : parts[1]),
-    arch = assertArch(parts.length < 3 ? process.arch : parts[2]);
+    os = parts.length < 2 ? config.os : assertOS(parts[1]),
+    arch = parts.length < 3 ? (process.arch as any) : assertArch(parts[2]);
 
   return {
     id: `${version}_${os}_${arch}`,
@@ -48,7 +48,7 @@ export const install: Installer = async (logGroup, resolved, dest) => {
 
   const bytes = await (await fetch(link)).bytes();
   console.info(logGroup, 'unzipping to', relative('.', dest));
-  const files = unzipSync(bytes);
+  const files = await unzipAsync(bytes);
 
   if (resolved.os === 'win32') {
     await Promise.all([
@@ -57,7 +57,7 @@ export const install: Installer = async (logGroup, resolved, dest) => {
     ]);
 
     return {
-      bin: { 'quickjs.exe': 'qjs.exe' },
+      bin: { 'quickjs.exe': 'qjs.exe', 'libwinpthread-1.dll': 'libwinpthread-1.dll' },
     };
   }
 

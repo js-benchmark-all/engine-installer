@@ -21,16 +21,27 @@ export interface Config {
 
   /**
    * Directory path to install engines, relative to this config file.
+   * @example
+   * {
+   *   "dir": ".egisl"
+   * }
    *
-   * Defaults to `.egisl`.
+   * {
+   *   // special syntax, equivalent to "$HOME/.egisl"
+   *   "dir": "~/.egisl"
+   * }
    */
   dir: string;
 
   /**
-   * Installed engine binaries.
+   * Installed engines.
    */
-  engines: InstalledEngines;
+  engines?: InstalledEngines;
 }
+
+export type ModifiedConfig = {
+  [K in keyof Config]-?: Config[K];
+};
 
 export const rmPath = async (logGroup: string, path: string): Promise<void> => {
   const relativePath = relative('.', path);
@@ -64,7 +75,6 @@ export const readConfig = async (
       handle,
       data: {
         dir: '.egisl',
-        engines: {},
       },
     };
   }

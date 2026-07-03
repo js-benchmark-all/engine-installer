@@ -5,11 +5,11 @@ import {
   assertArch,
   assertOS,
   unsupportedTarget,
+  unzipAsync,
   writeUzippedTo,
   type Arch,
   type OS,
 } from './utils.ts';
-import { unzipSync } from 'fflate/node';
 
 export const getLink = (releaseTag: string, arch: Arch, os: OS): string => {
   arch === 'x64' ||
@@ -23,15 +23,15 @@ export const getLink = (releaseTag: string, arch: Arch, os: OS): string => {
   return `https://github.com/awslabs/llrt/releases/download/${releaseTag}/llrt-${os}-${arch}.zip`;
 };
 
-export const resolve: Resolver = async (id: string) => {
+export const resolve: Resolver = async (id, config) => {
   let parts = id.split('_', 3),
     version: string =
       parts[0] === 'latest'
         ? // slice https://github.com/awslabs/llrt/releases/tag/
           (await fetch('https://github.com/awslabs/llrt/releases/latest')).url.slice(45)
         : parts[0],
-    os = assertOS(parts.length < 2 ? process.platform : parts[1]),
-    arch = assertArch(parts.length < 3 ? process.arch : parts[2]);
+    os = parts.length < 2 ? config.os : assertOS(parts[1]),
+    arch = parts.length < 3 ? config.arch : assertArch(parts[2]);
 
   return {
     id: `${version}_${os}_${arch}`,
@@ -48,7 +48,8 @@ export const install: Installer = async (logGroup, resolved, dest) => {
 
   const bytes = await (await fetch(link)).bytes();
   console.info(logGroup, 'unzipping to', relative('.', dest));
-  const files = unzipSync(bytes);
+
+  const files = await unzipAsync(bytes);
 
   if (resolved.os === 'win32') {
     await writeUzippedTo(logGroup, dest + '\\llrt.exe', files, 'llrt.exe');
