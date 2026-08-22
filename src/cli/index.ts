@@ -5,7 +5,7 @@ import { accessSync, constants } from 'node:fs';
 import { closeConfig, readConfig, type ModifiedConfig } from './config.ts';
 import { install, load } from './install.ts';
 import { homedir } from 'node:os';
-import { assertArch, assertOS } from '../engines/utils.ts';
+import { assertArch, assertOS } from '../engines/utils/check.ts';
 
 const { argv } = process;
 
@@ -72,7 +72,7 @@ if (argv.length < 3 || argv[2] === 'help') {
 
     // Special dir syntax
     const originalDir = data.dir;
-    originalDir.startsWith('~' + sep) && (data.dir = join(homedir(), originalDir.slice(2)));
+    originalDir.startsWith('~' + sep) && (data.dir = join(homedir(), originalDir.slice(1 + sep.length)));
 
     if (argv[2] === 'init')
       for (const runtime in data.engines) promises.push(install(runtime, data as ModifiedConfig));
@@ -81,12 +81,8 @@ if (argv.length < 3 || argv[2] === 'help') {
     else if (argv[2] === 'use')
       for (let i = 3; i < argv.length; i++) promises.push(load(argv[i], data as ModifiedConfig));
     else if (argv[2] === 'use-all')
-      for (
-        let i = 0, keys = Object.keys(data.engines as ModifiedConfig['engines']);
-        i < keys.length;
-        i++
-      )
-        promises.push(load(keys[i], data as ModifiedConfig));
+      for (const key in data.engines as ModifiedConfig['engines'])
+        promises.push(load(key, data as ModifiedConfig));
 
     await Promise.all(promises);
 

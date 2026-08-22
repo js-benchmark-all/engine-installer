@@ -1,5 +1,5 @@
 import { relative } from 'node:path';
-import type { Arch, OS } from '../engines/utils.ts';
+import type { Arch, OS } from '../engines/utils/check.ts';
 import { constants, open, rm, type FileHandle } from 'node:fs/promises';
 
 export type InstalledEngines = Record<string, InstalledEngine>;

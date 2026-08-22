@@ -6,12 +6,13 @@
       "name": "example",
       "dependencies": {
         "fflate": "^0.8.3",
+        "nanotar": "^0.3.0",
       },
       "devDependencies": {
-        "@swc/core": "^1.15.43",
+        "@swc/core": "^1.15.46",
         "@types/bun": "^1.3.14",
         "@types/deno": "^2.7.0",
-        "@types/node": "^26.0.1",
+        "@types/node": "^26.1.1",
         "chokidar": "^5.0.0",
         "measure-loop": "^0.4.0",
         "oxc-transform": "^0.137.0",
@@ -196,6 +197,8 @@
     "fflate": ["fflate@0.8.3", "", {}, "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA=="],
 
     "measure-loop": ["measure-loop@0.4.0", "", { "dependencies": { "runtime-compiler": "4.2.2" } }, "sha512-K06ExJhhpc4WNJiaAobqUSqzW93pXixDlDGMvSAezwAzDNpvrIamMTxmeCcePQ9U/edAfBIE0xbZsbdKLM+Nnw=="],
+
+    "nanotar": ["nanotar@0.3.0", "", {}, "sha512-Kv2JYYiCzt16Kt5QwAc9BFG89xfPNBx+oQL4GQXD9nLqPkZBiNaqaCWtwnbk/q7UVsTYevvM1b0UF8zmEI4pCg=="],
 
     "oxc-transform": ["oxc-transform@0.137.0", "", { "optionalDependencies": { "@oxc-transform/binding-android-arm-eabi": "0.137.0", "@oxc-transform/binding-android-arm64": "0.137.0", "@oxc-transform/binding-darwin-arm64": "0.137.0", "@oxc-transform/binding-darwin-x64": "0.137.0", "@oxc-transform/binding-freebsd-x64": "0.137.0", "@oxc-transform/binding-linux-arm-gnueabihf": "0.137.0", "@oxc-transform/binding-linux-arm-musleabihf": "0.137.0", "@oxc-transform/binding-linux-arm64-gnu": "0.137.0", "@oxc-transform/binding-linux-arm64-musl": "0.137.0", "@oxc-transform/binding-linux-ppc64-gnu": "0.137.0", "@oxc-transform/binding-linux-riscv64-gnu": "0.137.0", "@oxc-transform/binding-linux-riscv64-musl": "0.137.0", "@oxc-transform/binding-linux-s390x-gnu": "0.137.0", "@oxc-transform/binding-linux-x64-gnu": "0.137.0", "@oxc-transform/binding-linux-x64-musl": "0.137.0", "@oxc-transform/binding-openharmony-arm64": "0.137.0", "@oxc-transform/binding-wasm32-wasi": "0.137.0", "@oxc-transform/binding-win32-arm64-msvc": "0.137.0", "@oxc-transform/binding-win32-ia32-msvc": "0.137.0", "@oxc-transform/binding-win32-x64-msvc": "0.137.0" } }, "sha512-uQWiGRkA4ZYgZ99t0ZpLsxTVzrUJJUAS3ArGDKukVLiLf9pGXvtdEksTL2M7YoXbuUn/slU9+kyDdScuwFEMDQ=="],
 

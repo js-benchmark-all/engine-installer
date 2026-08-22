@@ -1,15 +1,7 @@
-import { relative } from 'node:path';
-
 import type { Installer, Resolver } from '../cli/install.ts';
-import {
-  assertArch,
-  assertOS,
-  unsupportedTarget,
-  unzipAsync,
-  writeUzippedTo,
-  type Arch,
-  type OS,
-} from './utils.ts';
+import { assertArch, assertOS, unsupportedTarget, type Arch, type OS } from './utils/check.ts';
+import { write, writeBinary } from './utils/fs.ts';
+import { unzipAsync } from './utils/unzip.ts';
 
 const additionalMsg = 'quickjs supports linux_x64, linux_x86, win32_x64, win32_x86';
 
@@ -44,29 +36,28 @@ export const resolve: Resolver = async (id, config) => {
 
 export const install: Installer = async (logGroup, resolved, dest) => {
   const link = getLink(resolved.version, resolved.arch, resolved.os);
-  console.info(logGroup, 'fetching', link);
 
+  console.info(logGroup, 'fetching', link);
   const bytes = await (await fetch(link)).bytes();
-  console.info(logGroup, 'unzipping to', relative('.', dest));
+
+  console.info(logGroup, 'unzipping');
   const files = await unzipAsync(bytes);
 
   if (resolved.os === 'win32') {
     await Promise.all([
-      writeUzippedTo(logGroup, dest + '\\qjs.exe', files, 'qjs.exe'),
-      writeUzippedTo(logGroup, dest + '\\libwinpthread-1.dll', files, 'libwinpthread-1.dll'),
+      writeBinary(logGroup, 'qjs.exe', dest + '\\qjs.exe', files['qjs.exe']),
+      write(logGroup, 'libwinpthread-1.dll', dest + '\\libwinpthread-1.dll', files['libwinpthread-1.dll']),
     ]);
-
     return {
       bin: { 'quickjs.exe': 'qjs.exe', 'libwinpthread-1.dll': 'libwinpthread-1.dll' },
     };
   }
 
   await Promise.all([
-    writeUzippedTo(logGroup, dest + '/qjs', files, 'qjs'),
-    writeUzippedTo(logGroup, dest + '/run-test262', files, 'run-test262'),
+    writeBinary(logGroup, 'qjs', dest + '/qjs', files.qjs),
+    write(logGroup, 'run-test262', dest + '/run-test262', files['run-test262']),
   ]);
-
   return {
-    bin: { quickjs: 'qjs', 'quickjs-run-test262': 'run_test262' },
+    bin: { quickjs: 'qjs', 'quickjs-run-test262': 'run-test262' },
   };
 };

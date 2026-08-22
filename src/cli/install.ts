@@ -1,8 +1,9 @@
 import { join, relative, sep } from 'node:path';
-import { mkdir, symlink } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 
-import type { Arch, OS } from '../engines/utils.ts';
+import type { Arch, OS } from '../engines/utils/check.ts';
 import type { ModifiedConfig, InstalledEngine } from './config.ts';
+import { symlinkTo } from '../engines/utils/fs.ts';
 
 export interface ResolvedId {
   version: string;
@@ -30,11 +31,10 @@ export const load = async (name: string, config: ModifiedConfig): Promise<any> =
     const promises: Promise<void>[] = [];
 
     for (let key in bin) {
-      const binPath = join(config.dir, key),
-        enginePath = join(config.dir, name + sep + bin[key]);
-
-      console.info(logGroup, 'symlink', relative('.', enginePath), 'to', relative('.', binPath));
-      promises.push(symlink(enginePath, binPath));
+      const configDir = relative('.', config.dir);
+      promises.push(
+        symlinkTo(logGroup, configDir + sep + key, configDir + sep + name + sep + bin[key]),
+      );
     }
 
     await Promise.all(promises);
@@ -61,13 +61,15 @@ export const runInstall = async (
     engine += '@' + id;
     logGroup = `[${engine}]`;
 
-    const dest = join(config.dir, engine);
+    const dest = relative('.', join(config.dir, engine));
     if (await mkdir(dest, { recursive: true })) {
       console.info(logGroup, 'installing');
       config.engines[engine] = await o.install(logGroup, resolved, dest);
     } else console.info(logGroup, 'already installed');
 
     console.info(logGroup, 'done :>');
+
+    return load(engine, config);
   } catch (e) {
     console.error(logGroup, 'install error:', e);
   }
@@ -76,9 +78,9 @@ export const runInstall = async (
 export const install = async (name: string, config: ModifiedConfig): Promise<void> => {
   const { 0: engine, 1: version = 'latest' } = name.split('@');
 
-  if (engine === 'llrt')
-    return runInstall('llrt', await import('../engines/llrt.js'), version, config);
-  else if (engine === 'quickjs')
-    return runInstall('quickjs', await import('../engines/quickjs.js'), version, config);
-  else console.error('unknown engine:', engine, '(installer supports llrt, quickjs)');
+  try {
+    return runInstall(engine, await import(`../engines/${engine}.js`), version, config);
+  } catch {
+    console.error('unknown engine:', engine, '(installer supports llrt, quickjs, porffor)');
+  }
 };
