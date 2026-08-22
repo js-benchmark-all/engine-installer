@@ -43,20 +43,6 @@ export type ModifiedConfig = {
   [K in keyof Config]-?: Config[K];
 };
 
-export const rmPath = async (logGroup: string, path: string): Promise<void> => {
-  const relativePath = relative('.', path);
-  console.info(logGroup, 'removing', path);
-
-  try {
-    await rm(relativePath);
-  } catch (e) {
-    console.error(logGroup, 'removing error:', e);
-    return;
-  }
-
-  console.info(logGroup, 'removed', path);
-};
-
 export const readConfig = async (
   path: string,
 ): Promise<{

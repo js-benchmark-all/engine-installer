@@ -16,11 +16,16 @@ egisl add quickjs@2026-06-04_x64
 egisl add porffor@alpha-1_x64_linux
 
 # add multiple engines
-egisl add v8 quickjs llrt jsc hermes spidermonkey xs
+egisl add llrt quickjs porffor
 
 # remove engines, similar arguments to egist add
 egisl rm ...
 
-# alias binaries, similar arguments to egist add
+# remove installed engine
+egisl rm-all
+
+# alias engine binaries, similar arguments to egist add
 egisl use ...
 ```
+
+Engine binaries are installed in configured directory in `egisl.json`.

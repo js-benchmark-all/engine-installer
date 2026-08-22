@@ -39,7 +39,7 @@ export const install: Installer = async (logGroup, resolved, dest) => {
   console.info(logGroup, 'fetching', link);
   const bytes = await (await fetch(link)).bytes();
 
-  console.info(logGroup, 'unzipping');
+  console.info(logGroup, 'decompressing');
   const files = await unzipAsync(bytes);
 
   if (resolved.os === 'win32') {

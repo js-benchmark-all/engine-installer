@@ -3,7 +3,7 @@ import { join, relative, sep } from 'node:path';
 import { accessSync, constants } from 'node:fs';
 
 import { closeConfig, readConfig, type ModifiedConfig } from './config.ts';
-import { install, load } from './install.ts';
+import { install, load, uninstall } from './install.ts';
 import { homedir } from 'node:os';
 import { assertArch, assertOS } from '../engines/utils/check.ts';
 
@@ -72,7 +72,8 @@ if (argv.length < 3 || argv[2] === 'help') {
 
     // Special dir syntax
     const originalDir = data.dir;
-    originalDir.startsWith('~' + sep) && (data.dir = join(homedir(), originalDir.slice(1 + sep.length)));
+    originalDir.startsWith('~' + sep) &&
+      (data.dir = join(homedir(), originalDir.slice(1 + sep.length)));
 
     if (argv[2] === 'init')
       for (const runtime in data.engines) promises.push(install(runtime, data as ModifiedConfig));
@@ -80,9 +81,12 @@ if (argv.length < 3 || argv[2] === 'help') {
       for (let i = 3; i < argv.length; i++) promises.push(install(argv[i], data as ModifiedConfig));
     else if (argv[2] === 'use')
       for (let i = 3; i < argv.length; i++) promises.push(load(argv[i], data as ModifiedConfig));
-    else if (argv[2] === 'use-all')
+    else if (argv[2] === 'rm')
+      for (let i = 3; i < argv.length; i++)
+        promises.push(uninstall(argv[i], data as ModifiedConfig));
+    else if (argv[2] === 'rm-all')
       for (const key in data.engines as ModifiedConfig['engines'])
-        promises.push(load(key, data as ModifiedConfig));
+        promises.push(uninstall(key, data as ModifiedConfig));
 
     await Promise.all(promises);
 

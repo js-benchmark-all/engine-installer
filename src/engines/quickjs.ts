@@ -40,13 +40,18 @@ export const install: Installer = async (logGroup, resolved, dest) => {
   console.info(logGroup, 'fetching', link);
   const bytes = await (await fetch(link)).bytes();
 
-  console.info(logGroup, 'unzipping');
+  console.info(logGroup, 'decompressing');
   const files = await unzipAsync(bytes);
 
   if (resolved.os === 'win32') {
     await Promise.all([
       writeBinary(logGroup, 'qjs.exe', dest + '\\qjs.exe', files['qjs.exe']),
-      write(logGroup, 'libwinpthread-1.dll', dest + '\\libwinpthread-1.dll', files['libwinpthread-1.dll']),
+      write(
+        logGroup,
+        'libwinpthread-1.dll',
+        dest + '\\libwinpthread-1.dll',
+        files['libwinpthread-1.dll'],
+      ),
     ]);
     return {
       bin: { 'quickjs.exe': 'qjs.exe', 'libwinpthread-1.dll': 'libwinpthread-1.dll' },

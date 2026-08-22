@@ -1,11 +1,5 @@
 import type { Installer, Resolver } from '../cli/install.ts';
-import {
-  assertArch,
-  assertOS,
-  unsupportedTarget,
-  type Arch,
-  type OS,
-} from './utils/check.ts';
+import { assertArch, assertOS, unsupportedTarget, type Arch, type OS } from './utils/check.ts';
 import { parseTarGzip } from 'nanotar';
 import { writeBinary } from './utils/fs.ts';
 
@@ -29,7 +23,7 @@ export const resolve: Resolver = async (id, config) => {
   let parts = id.split('_', 3),
     version: string =
       parts[0] === 'latest'
-        ? (await fetch('https://github.com/CanadaHonk/porffor/releases/latest')).url.slice(45)
+        ? (await fetch('https://github.com/CanadaHonk/porffor/releases/latest')).url.slice(51)
         : parts[0],
     os = parts.length < 2 ? config.os : assertOS(parts[1]),
     arch = parts.length < 3 ? config.arch : assertArch(parts[2]);

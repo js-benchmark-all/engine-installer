@@ -1,6 +1,8 @@
-import { readlink, symlink, unlink, writeFile } from 'node:fs/promises';
+import { readlink, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { dirname, relative } from 'node:path';
 import { formatBytes } from './check.ts';
+
+import type { RmOptions } from 'node:fs';
 
 export const symlinkTo = async (logGroup: string, dest: string, bin: string): Promise<void> => {
   console.info(logGroup, 'linking', dest, 'to', bin);
@@ -18,12 +20,47 @@ const EXEC_MODE = {
   mode: 0o755,
 };
 
-export const writeBinary = (logGroup: string, name: string, path: string, content: Uint8Array): Promise<void> => {
-  console.info(logGroup, 'writing binary', name, '(' + formatBytes(content.byteLength) + ')', 'to', path);
+export const writeBinary = (
+  logGroup: string,
+  name: string,
+  path: string,
+  content: Uint8Array,
+): Promise<void> => {
+  console.info(
+    logGroup,
+    'writing binary',
+    name,
+    '(' + formatBytes(content.byteLength) + ')',
+    'to',
+    path,
+  );
   return writeFile(path, content, EXEC_MODE);
-}
+};
 
-export const write = (logGroup: string, name: string, path: string, content: Uint8Array): Promise<void> => {
+export const write = (
+  logGroup: string,
+  name: string,
+  path: string,
+  content: Uint8Array,
+): Promise<void> => {
   console.info(logGroup, 'writing', name, '(' + formatBytes(content.byteLength) + ')', 'to', path);
   return writeFile(path, content);
-}
+};
+
+export const rmPath = async (
+  logGroup: string,
+  path: string,
+  options?: RmOptions,
+): Promise<void> => {
+  const relativePath = relative('.', path);
+  console.info(logGroup, 'removing', path);
+
+  try {
+    await rm(relativePath, options);
+  } catch (e) {
+    console.error(logGroup, 'removing error:', e);
+    return;
+  }
+
+  console.info(logGroup, 'removed', path);
+};

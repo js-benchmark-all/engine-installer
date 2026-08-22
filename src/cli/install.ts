@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 
 import type { Arch, OS } from '../engines/utils/check.ts';
 import type { ModifiedConfig, InstalledEngine } from './config.ts';
-import { symlinkTo } from '../engines/utils/fs.ts';
+import { rmPath, symlinkTo } from '../engines/utils/fs.ts';
 
 export interface ResolvedId {
   version: string;
@@ -50,7 +50,7 @@ export const runInstall = async (
   version: string,
   config: ModifiedConfig,
 ): Promise<void> => {
-  let logGroup = '[' + engine + ']';
+  let logGroup = `[${engine}]`;
 
   try {
     console.info(logGroup, 'resolving', version);
@@ -82,5 +82,18 @@ export const install = async (name: string, config: ModifiedConfig): Promise<voi
     return runInstall(engine, await import(`../engines/${engine}.js`), version, config);
   } catch {
     console.error('unknown engine:', engine, '(installer supports llrt, quickjs, porffor)');
+  }
+};
+
+export const uninstall = async (name: string, config: ModifiedConfig): Promise<void> => {
+  const logGroup = `[${name}]`,
+    engine = config.engines[name];
+
+  if (engine != null) {
+    await rmPath(logGroup, join(config.dir, name), { recursive: true });
+    delete config.engines[name];
+  } else {
+    console.error(logGroup, 'no installed engine matching', name);
+    console.error(logGroup, 'installed engines:', Object.keys(config.engines).join(', '));
   }
 };
