@@ -14,7 +14,7 @@
         "quickjs-run-test262": "run-test262"
       }
     },
-    "porffor@alpha-1_linux_x64": {
+    "porffor@alpha-25_linux_x64": {
       "bin": {
         "porf": "porf"
       }
